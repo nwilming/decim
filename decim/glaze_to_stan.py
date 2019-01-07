@@ -1,4 +1,4 @@
-from decim import glaze_model as gl
+ifrom decim import glaze_model as gl
 import numpy as np
 import pandas as pd
 import math
@@ -100,11 +100,11 @@ def data_from_df(df):
     '''
     Returns stan ready data dict from pointsimulation dataframe.
     '''
-    decisions = df.loc[df.message == 'decision']
+    decisions = df.loc[df.make_choice == True]
     data = {
         'I': len(decisions),
         'N': len(df),
-        'obs_decisions': decisions.choice.values,
+        'obs_decisions': decisions.choice.values.astype(int),
         'obs_idx': np.array(decisions.index.values).astype(int) + 1,
         'x': df.value.values,
         'B': 1,
@@ -158,3 +158,4 @@ between blocks and started a new index from that point onwards
 #data = data_from_df(sim)
 
 #print(likelihood(data, parameters={'V': 2, 'H': 1 / 10, 'gen_var': 1}))
+

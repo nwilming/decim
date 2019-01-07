@@ -17,11 +17,13 @@ def fast_sim(x, tH=1 / 70, nodec=5, isi=35.):
     """
     Simulates a dataset with x trials and true hazardrate tH. Does so faster.
 
-    nodec = minimum points between decisions. Nodec points are shown, after that 'isi' determines decision probability.
+    nodec = minimum points between decisions. Nodec points are shown, after
+    that 'isi' determines decision probability.
     """
-    inter_choice_dists = np.cumsum(expon.rvs(scale=1 / (1 / isi), size=10000))
-    inter_choice_dists = np.array([int(j + nodec + nodec * (np.where(inter_choice_dists == j)[0]))
-                                   for j in inter_choice_dists])  # adds 5 (nodec) points between every decision
+    inter_choice_dists = np.cumsum([isi] * x)
+    inter_choice_dists = np.array(
+        [int(j + nodec + nodec * (np.where(inter_choice_dists == j)[0]))
+         for j in inter_choice_dists])  # adds 5 (nodec) points between every decision
     inter_choice_dists = inter_choice_dists[inter_choice_dists < x]
 
     mus = []
@@ -47,6 +49,7 @@ def fast_sim(x, tH=1 / 70, nodec=5, isi=35.):
 
 # FILL IN MISSING INFORMATION
 
+
 def add_belief(df, H, gen_var=1):
     """
     Computes models belief according to glaze at location trials
@@ -69,7 +72,7 @@ def dec_choice_inv(df, V=1):
     df.loc[:, 'choice'] = np.random.rand(len(df))
     df.loc[:, 'choice'] = df.noisy_belief > df.choice
     df.loc[:, 'choice'] = df.choice.astype(float)
-    df.loc[df.loc[:, 'make_choice']==False, 'choice'] = np.nan
+    df.loc[df.loc[:, 'make_choice'] == False, 'choice'] = np.nan
     return df
 
 
@@ -87,8 +90,8 @@ def cer(df, H, gen_var, V):
     Takes dataframe and hazardrate.
     """
     com = complete(df, H, gen_var=gen_var, V=V, method='inverse')
-    actualrule = com.loc[com.message == 'decision', 'rule'] + 0.5
-    modelbelief = expit(com.loc[com.message == 'decision', 'belief'])
+    actualrule = com.loc[com.make_choice, 'rule'] + 0.5
+    modelbelief = expit(com.loc[com.make_choice, 'belief'])
     error = -np.sum(((1 - actualrule) * np.log(1 - modelbelief)) +
                     (actualrule * np.log(modelbelief)))
     return error
@@ -153,3 +156,4 @@ Made the module slightly faster by deleting obsolete functions
 calculating correct answers of model.
 Readability according to PEP-257
 '''
+
