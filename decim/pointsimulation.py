@@ -13,7 +13,7 @@ from scipy.stats import norm
 
 # SIMULATE POINT LOCATIONS AND DECISION POINTS
 
-def fast_sim(x, tH=1 / 70, nodec=5, isi=35.):
+def fast_sim(x, tH=1 / 30, nodec=0, isi=35.):
     """
     Simulates a dataset with x trials and true hazardrate tH. Does so faster.
 

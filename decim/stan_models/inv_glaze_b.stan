@@ -10,7 +10,7 @@ data {
 parameters {
     real<lower=0, upper=1> H; //Hazardrate used in glaze
     real<lower=1> V; //Variance used in glaze
-    real<lower=0> gen_var; //Variance used in glaze
+    real<lower=0.01> gen_var; //Variance used in glaze
 }
 transformed parameters {
     real psi[N];

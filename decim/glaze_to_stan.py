@@ -1,4 +1,4 @@
-ifrom decim import glaze_model as gl
+from decim import glaze_model as gl
 import numpy as np
 import pandas as pd
 import math
@@ -83,6 +83,7 @@ def stan_data_control(subject, session, path, swap=False):
     belief_indices = df.loc[decisions.index].index.values
     pointinds = np.array(points.index)
     dec_indices = np.searchsorted(pointinds, belief_indices)  # np.searchsorted looks for position where belief index would fit into pointinds
+    assert(np.sum(np.isnan(decisions.values))==0)
     data = {
         'I': dec_count,
         'N': point_count,
