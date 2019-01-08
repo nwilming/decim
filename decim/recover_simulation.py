@@ -40,6 +40,7 @@ def fix_keys():
                       ['H', 'V', 'gen_var'], isi, 1000)
                 i += 1
 
+
 def par_execute(ii, chunks):
     chunks = [arg for arg in chunks if arg is not None]
     chunks = grouper(chunks, 16)
@@ -52,10 +53,13 @@ def par_execute(ii, chunks):
             results.extend(values)
             df = pd.DataFrame(values)
             df.to_hdf(
-                    '/work/faty014/kobe_param_rec_fixed_%i.hdf'%(ii), key='chunk%i'%cnt)
+                '/work/faty014/kobe_param_rec_var_%i.hdf' % (ii),
+                key='chunk%i' % cnt)
             cnt += 1
 
-def execute_strategy(strat, H, V, gv, i, var, model, fixed_variable, parameters, isi, trials):
+
+def execute_strategy(strat, H, V, gv, i, var, model, fixed_variable,
+                     parameters, isi, duration):
     model_file = decim.get_data(model)
     compilefile = join(
         '/work/faty014', model.replace('/', '') + 'stan_compiled.pkl')
@@ -64,7 +68,13 @@ def execute_strategy(strat, H, V, gv, i, var, model, fixed_variable, parameters,
     except IOError:
         sm = pystan.StanModel(file=model_file)
         pickle.dump(sm, open(compilefile, 'wb'))
-    total_trials = trials + int(trials / float(isi))
+    #total_trials = trials + int(trials / float(isi))
+    dur = 2.25
+    conf = 2
+    trials_per_block = (duration /
+                        ((dur + conf) * (1 / isi) + (dur * (1 - (1 / isi)))))
+    total_trials = trials_per_block * 2 * 5
+
     Hest = np.nan
     if strat == "TRUE":
         # Infered H is real H
@@ -73,14 +83,14 @@ def execute_strategy(strat, H, V, gv, i, var, model, fixed_variable, parameters,
         data = gs.data_from_df(data)
     elif strat == "FIXED":
         # real H is 1/30, infered H is H
-        points = pt.fast_sim(total_trials, tH=1/30, isi=isi, nodec=0)
+        points = pt.fast_sim(total_trials, tH=1 / 30, isi=isi, nodec=0)
         data = pt.complete(points, V=V, gen_var=gv, H=H, method='inverse')
         data = gs.data_from_df(data)
     else:
         # Infered H is based on data
         points = pt.fast_sim(total_trials, tH=H, isi=isi, nodec=0)
-        Hest = pt.opt_h(points, gen_var=gv, V=V) 
-        print('True H: %3.2f, Estimated %3.2f'%(H, Hest))
+        Hest = pt.opt_h(points, gen_var=gv, V=V)
+        print('True H: %3.2f, Estimated %3.2f' % (H, Hest))
         data = pt.complete(points, V=V, gen_var=gv, H=Hest, method='inverse')
         data = gs.data_from_df(data)
 
@@ -136,4 +146,3 @@ def submit():
                  memory=60, nodes=1, tasks=16, name='PRECOVERY')
 # if __name__ == '__main__':
  #   submit()
-
