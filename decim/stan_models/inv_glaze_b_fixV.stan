@@ -1,10 +1,24 @@
+// Invert glaze decision making model with bayesian inference
+//
+// Data comes from several blocks of trials, at the beginning of each
+// block evidence starts at 0.
+//
+// In each trial participants receive a sample of evidence, but have to 
+// act on this evidence only if this is a decision trial. The decision
+// is made after seeing the evidence.
+//
+// In this script it is assumed that evidence is not perfectly known,
+// but that there is measurement error attached to it. E.g. in a RDM
+// stimulus we only know the average coherence, but not the actual 
+// coherence. 
+//
 data {
     int<lower=0> B; // number of blocks
     int b[B+1]; // integer array with indices of last point locations of block
     int<lower=0> I; // number of decision trials
     int<lower=0> N; // number of point locations
     vector[N] x; // vector with N point locations
-    int obs_idx[I];   // integer array with indices of decision point locations
+    int obs_idx[I];   // integer array with indices of decision point locations    
     int obs_decisions[I];
 }
 parameters {
@@ -12,16 +26,21 @@ parameters {
     real<lower=0> gen_var; //Variance used in glaze
 }
 transformed parameters {
+    real internal_samples[I];
     real psi[N];
     real choice_value[N];
     real llr;
 
+    for (i in 1:I):
+        internal_samples[I] ~ normal(x[i], 1)
+
     for (i in 1:B) {
-        llr = normal_lpdf(x[b[i]+1] | 0.5, gen_var) -  normal_lpdf(x[b[i]+1] | -0.5, gen_var);
+
+        llr = normal_lpdf(internal_samples[b[i]+1] | 0.5, gen_var) -  normal_lpdf(internal_samples[b[i]+1] | -0.5, gen_var);
         psi[b[i]+1] = llr;
 
         for (n in (b[i]+2):b[i+1]) {
-            llr = normal_lpdf(x[n] | 0.5, gen_var) - normal_lpdf(x[n] | -0.5, gen_var);
+            llr = normal_lpdf(internal_samples[n] | 0.5, gen_var) - normal_lpdf(internal_samples[n] | -0.5, gen_var);
             psi[n] = llr + (psi[n-1] + log( (1 - H) / H + exp(-psi[n-1]))
                     - log((1 - H) / H + exp(psi[n-1])));
             }

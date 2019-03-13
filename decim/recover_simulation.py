@@ -29,15 +29,15 @@ def fix_keys():
         for _ in range(nr_reps):
             for V, H, isi in product(Vs, Hs, isis):
                 yield(strat, H, V, 1, i,  'V', models['gvfix'], 'gvfix',
-                      ['H', 'V'], isi, 1000)
+                      ['H', 'V'], isi, 600)
                 i += 1
             for gv, H, isi in product(gvs, Hs, isis):
                 yield(strat, H, 1, gv, i, 'V', models['vfix'], 'vfix',
-                      ['H', 'gen_var'], isi, 1000)
+                      ['H', 'gen_var'], isi, 600)
                 i += 1
             for V, gv, H, isi in product(Vs, gvs, Hs, isis):
                 yield(strat, H, V, gv, i, 'V', models['none'], 'none',
-                      ['H', 'V', 'gen_var'], isi, 1000)
+                      ['H', 'V', 'gen_var'], isi, 600)
                 i += 1
 
 
@@ -73,8 +73,8 @@ def execute_strategy(strat, H, V, gv, i, var, model, fixed_variable,
     conf = 2
     trials_per_block = (duration /
                         ((dur + conf) * (1 / isi) + (dur * (1 - (1 / isi)))))
-    total_trials = trials_per_block * 2 * 5
-
+    total_trials = int(trials_per_block * 2 * 5)
+    print('Total nr. of trials is: %i'%total_trials)
     Hest = np.nan
     if strat == "TRUE":
         # Infered H is real H
