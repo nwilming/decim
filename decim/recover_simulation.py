@@ -74,7 +74,9 @@ def execute_strategy(strat, H, V, gv, i, var, model, fixed_variable,
     trials_per_block = (duration /
                         ((dur + conf) * (1 / isi) + (dur * (1 - (1 / isi)))))
     total_trials = int(trials_per_block * 2 * 5)
-    print('Total nr. of trials is: %i'%total_trials)
+
+    print('Total trials: %i'%total_trials)
+
     Hest = np.nan
     if strat == "TRUE":
         # Infered H is real H
